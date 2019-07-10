@@ -1,0 +1,84 @@
+#!/usr/bin/env ruby
+
+require 'thor'
+
+class Gembuilder < Thor::Group
+  include Thor::Actions
+
+  argument :gem_name
+  source_root File.dirname(__FILE__)
+  
+  def generate
+    init_git_repo
+    add_license
+    make_gem_folder
+    create_gemspec
+    create_lib_folder
+    create_main_rb
+  end
+
+  private
+  
+  # Initialize empty git repo
+  def init_git_repo
+    if yes?("Init git repository?")
+      inside(gem_name) do
+        run "git init"
+        if yes?('Add a remote?')
+          origin = ask('Remote name: ')
+          if origin.to_s.strip.empty?
+            say('Remote cannot be blank') 
+          else
+            run "git remote add origin #{origin}"
+            run "git remote -v"
+            say('Remote added!')
+          end
+        end
+      end
+    end
+  end
+
+
+  # Adding a license
+  def add_license
+    if yes?('Add a license?')
+      say('Please select a license: [ (1) MIT / (2) GNU / (3) APACHE]')
+      license = resolve_license!(ask('Enter number (e.g: 1) or the license name (e.g: MIT)'))
+      copy_file "templates/licenses/#{license}", "#{gem_name}/LICENSE" 
+    end
+  end
+
+  # Create folder for the gem
+  def make_gem_folder
+    empty_directory(gem_name)
+  end
+
+  # Create gem's gemspec
+  def create_gemspec
+    template("templates/template.gemspec.tt", "#{gem_name}/#{gem_name}.gemspec")
+  end
+
+  # Create gem's lib folder
+  def create_lib_folder
+    empty_directory("#{gem_name}/lib")
+  end
+
+  # Create gem's main file
+  def create_main_rb
+    template("templates/main.rb.tt", "#{gem_name}/lib/#{gem_name}.rb")
+  end
+
+  def resolve_license!(input)
+    choice = Integer(input) rescue 0
+    case choice
+    when 1 then 'MIT'
+    when 2 then 'GNU'
+    when 3 then 'APACHE'
+    else
+      raise ArgumentError.new("Invalid license number: #{input}") unless ['MIT', 'GNU', 'APACHE'].include? input
+      input
+    end
+  end
+end
+
+Gembuilder.start

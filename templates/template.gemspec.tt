@@ -1,0 +1,11 @@
+Gem::Specification.new do |s|
+  s.name        = "<%= gem_name %>"   
+  s.version     = '0.0.1'   
+  s.summary     = "<%= gem_name %>"   
+  s.description = "[TODO]"   
+  s.authors     = [""]   
+  s.email       = ''
+  s.files       = ["lib/<%= gem_name %>.rb"]   
+  s.homepage    = "[TODO]"   
+  s.license     = 'MIT'
+end
